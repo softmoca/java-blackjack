@@ -2,10 +2,11 @@ package blackjack.controller;
 
 import blackjack.domain.deck.Deck;
 import blackjack.domain.game.BlackJackGame;
+import blackjack.domain.game.DefaultDealerHitStrategy;
 import blackjack.domain.game.FinalIncome;
 import blackjack.domain.participant.Dealer;
-import blackjack.domain.participant.Player;
 import blackjack.domain.participant.Players;
+import blackjack.view.ConsolePlayerHitStrategy;
 import blackjack.view.InputView;
 import blackjack.view.OutputView;
 
@@ -19,7 +20,7 @@ public class BlackJackController {
         Deck deck = new Deck();
 
         BlackJackGame blackJackGame = startGame(players, dealer, deck);
-        playGame(players, dealer, deck);
+        playGame(blackJackGame);
         showGameResult(blackJackGame, dealer, players);
     }
 
@@ -30,29 +31,18 @@ public class BlackJackController {
         return blackJackGame;
     }
 
-    private void playGame(Players players, Dealer dealer, Deck deck) {
-        playerTurn(players, deck);
-        dealerTurn(dealer, deck);
+    private void playGame(BlackJackGame game) {
+        game.proceedAllPlayersTurn(
+                new ConsolePlayerHitStrategy(inputView),
+                outputView::printCard
+        );
+
+        game.proceedDealerTurn(
+                new DefaultDealerHitStrategy(),
+                outputView::printDealerDraw
+        );
     }
 
-    private void dealerTurn(Dealer dealer, Deck deck) {
-        while (dealer.shouldDraw()) {
-            outputView.printDealerDraw();
-            dealer.recieveCard(deck.draw());
-        }
-    }
-
-    private void playerTurn(Players players, Deck deck) {
-        for (Player player : players.getPlayers()) {
-            while (player.shouldDraw() && inputView.readHitAnswer(player.getName())) {
-                player.recieveCard(deck.draw());
-                outputView.printCard(player);
-            }
-            if (!player.isBust()) {
-                outputView.printCard(player);
-            }
-        }
-    }
 
     private void showGameResult(BlackJackGame blackJackGame, Dealer dealer, Players players) {
         outputView.printFinalCardResult(dealer, players);
