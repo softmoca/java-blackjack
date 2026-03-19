@@ -2,7 +2,7 @@ package blackjack.domain.game;
 
 public enum GameResult {
     WIN("승", 1.0),
-    BACKJACK_WIN("블랙잭 승", 1.5),
+    BLACKJACK_WIN("블랙잭 승", 1.5),
     TIE("무", 0.0),
     LOSE("패", -1.0);
 

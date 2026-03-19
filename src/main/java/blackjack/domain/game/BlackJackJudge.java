@@ -1,51 +1,31 @@
 package blackjack.domain.game;
 
-import blackjack.domain.participant.Dealer;
-import blackjack.domain.participant.Player;
-import blackjack.domain.participant.Players;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import blackjack.domain.state.State;
 
 public class BlackJackJudge {
 
-
-    public FinalIncome judge(Players players, Dealer dealer) {
-        Map<Player, Integer> incomeResult = new LinkedHashMap<>();
-        int dealerIncome = 0;
-
-        for (Player player : players.getPlayers()) {
-            GameResult gameResult = judgeGameResult(player, dealer);
-            int income = gameResult.calculateIncome(player.getBetAmount());  // ← 위임
-
-            incomeResult.put(player, income);
-            dealerIncome -= income;
-        }
-
-        return new FinalIncome(dealerIncome, incomeResult);
-    }
-
-    private GameResult judgeGameResult(Player player, Dealer dealer) {
-        if (player.isBust()) {
+    public GameResult judge(State playerState, State dealerState) {
+        if (playerState.isBust()) {
             return GameResult.LOSE;
         }
-        if (dealer.isBust()) {
+        if (dealerState.isBust()) {
             return GameResult.WIN;
         }
-        if (player.isBlackJack() && dealer.isBlackJack()) {
+        if (playerState.isBlackjack() && dealerState.isBlackjack()) {
             return GameResult.TIE;
         }
-        if (player.isBlackJack()) {
-            return GameResult.BACKJACK_WIN;
+        if (playerState.isBlackjack()) {
+            return GameResult.BLACKJACK_WIN;
         }
+        return compareScore(playerState, dealerState);
+    }
 
-        int playerTotalPoint = player.getTotalPoint();
-        int dealerTotalPoint = dealer.getTotalPoint();
-
-        if (playerTotalPoint == dealerTotalPoint) {
-            return GameResult.TIE;
-        }
-        if (playerTotalPoint > dealerTotalPoint) {
+    private GameResult compareScore(State playerState, State dealerState) {
+        if (playerState.score() > dealerState.score()) {
             return GameResult.WIN;
+        }
+        if (playerState.score() == dealerState.score()) {
+            return GameResult.TIE;
         }
         return GameResult.LOSE;
     }

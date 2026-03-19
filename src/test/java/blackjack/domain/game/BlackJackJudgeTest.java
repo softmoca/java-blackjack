@@ -5,160 +5,152 @@ import static org.assertj.core.api.Assertions.assertThat;
 import blackjack.domain.card.Card;
 import blackjack.domain.card.CardPattern;
 import blackjack.domain.card.CardPoint;
-import blackjack.domain.participant.BetAmount;
-import blackjack.domain.participant.Dealer;
-import blackjack.domain.participant.Name;
-import blackjack.domain.participant.Player;
-import blackjack.domain.participant.Players;
-import java.util.List;
+import blackjack.domain.state.State;
+import blackjack.domain.state.StateFactory;
 import org.junit.jupiter.api.Test;
 
 class BlackJackJudgeTest {
 
-    private Player createPlayer(String name, int betAmount) {
-        return new Player(new Name(name), new BetAmount(betAmount));
-    }
-
-    private Players createPlayers(Player... players) {
-        return new Players(List.of(players));
-    }
-
-    @Test
-    void 처음_두장으로_21이면_블랙잭_승리다() {
-        Player player = createPlayer("pobi", 1000);
-        player.recieveCard(new Card(CardPoint.ACE, CardPattern.SPADE));
-        player.recieveCard(new Card(CardPoint.KING, CardPattern.HEART));
-
-        Dealer dealer = new Dealer();
-        dealer.recieveCard(new Card(CardPoint.TEN, CardPattern.CLUB));
-        dealer.recieveCard(new Card(CardPoint.NINE, CardPattern.DIAMOND));
-
-        FinalIncome result = new BlackJackJudge().judge(createPlayers(player), dealer);
-
-        assertThat(result.getIncomeOf(player)).isEqualTo(1500);
-    }
-
-    @Test
-    void 세장의_합이_21이면_일반_승리이지_블랙잭_승리는_아니다() {
-        Player player = createPlayer("pobi", 1000);
-        player.recieveCard(new Card(CardPoint.SEVEN, CardPattern.SPADE));
-        player.recieveCard(new Card(CardPoint.SEVEN, CardPattern.HEART));
-        player.recieveCard(new Card(CardPoint.SEVEN, CardPattern.CLUB));
-
-        Dealer dealer = new Dealer();
-        dealer.recieveCard(new Card(CardPoint.TEN, CardPattern.DIAMOND));
-        dealer.recieveCard(new Card(CardPoint.NINE, CardPattern.CLUB));
-
-        FinalIncome result = new BlackJackJudge().judge(createPlayers(player), dealer);
-
-        assertThat(result.getIncomeOf(player)).isEqualTo(1000);
-    }
-
-    @Test
-    void 플레이어가_블랙잭이고_딜러가_일반21이면_블랙잭_승리다() {
-        Player player = createPlayer("pobi", 1000);
-        player.recieveCard(new Card(CardPoint.ACE, CardPattern.SPADE));
-        player.recieveCard(new Card(CardPoint.KING, CardPattern.HEART));
-
-        Dealer dealer = new Dealer();
-        dealer.recieveCard(new Card(CardPoint.SEVEN, CardPattern.CLUB));
-        dealer.recieveCard(new Card(CardPoint.SEVEN, CardPattern.DIAMOND));
-        dealer.recieveCard(new Card(CardPoint.SEVEN, CardPattern.HEART));
-
-        FinalIncome result = new BlackJackJudge().judge(createPlayers(player), dealer);
-
-        assertThat(result.getIncomeOf(player)).isEqualTo(1500);
-    }
-
-    @Test
-    void 플레이어와_딜러_모두_블랙잭이면_무승부다() {
-        Player player = createPlayer("pobi", 1000);
-        player.recieveCard(new Card(CardPoint.ACE, CardPattern.SPADE));
-        player.recieveCard(new Card(CardPoint.KING, CardPattern.HEART));
-
-        Dealer dealer = new Dealer();
-        dealer.recieveCard(new Card(CardPoint.ACE, CardPattern.CLUB));
-        dealer.recieveCard(new Card(CardPoint.KING, CardPattern.DIAMOND));
-
-        FinalIncome result = new BlackJackJudge().judge(createPlayers(player), dealer);
-
-        assertThat(result.getIncomeOf(player)).isEqualTo(0);
-    }
+    private final BlackJackJudge judge = new BlackJackJudge();
 
     @Test
     void 플레이어가_버스트이면_패배다() {
-        Player player = createPlayer("pobi", 1000);
-        player.recieveCard(new Card(CardPoint.QUEEN, CardPattern.SPADE));
-        player.recieveCard(new Card(CardPoint.KING, CardPattern.HEART));
-        player.recieveCard(new Card(CardPoint.TWO, CardPattern.CLUB));
+        State playerState = StateFactory.createInitialState(
+                new Card(CardPoint.QUEEN, CardPattern.SPADE),
+                new Card(CardPoint.KING, CardPattern.HEART)
+        );
+        playerState = playerState.draw(new Card(CardPoint.FIVE, CardPattern.CLUB));
 
-        Dealer dealer = new Dealer();
-        dealer.recieveCard(new Card(CardPoint.TEN, CardPattern.DIAMOND));
-        dealer.recieveCard(new Card(CardPoint.NINE, CardPattern.CLUB));
+        State dealerState = StateFactory.createInitialState(
+                new Card(CardPoint.TEN, CardPattern.DIAMOND),
+                new Card(CardPoint.NINE, CardPattern.CLUB)
+        );
+        dealerState = dealerState.stay();
 
-        FinalIncome result = new BlackJackJudge().judge(createPlayers(player), dealer);
-
-        assertThat(result.getIncomeOf(player)).isEqualTo(-1000);
+        assertThat(judge.judge(playerState, dealerState)).isEqualTo(GameResult.LOSE);
     }
 
     @Test
     void 딜러가_버스트이면_플레이어_승리다() {
-        Player player = createPlayer("pobi", 1000);
-        player.recieveCard(new Card(CardPoint.TEN, CardPattern.SPADE));
-        player.recieveCard(new Card(CardPoint.NINE, CardPattern.HEART));
+        State playerState = StateFactory.createInitialState(
+                new Card(CardPoint.TEN, CardPattern.SPADE),
+                new Card(CardPoint.NINE, CardPattern.HEART)
+        );
+        playerState = playerState.stay();
 
-        Dealer dealer = new Dealer();
-        dealer.recieveCard(new Card(CardPoint.QUEEN, CardPattern.CLUB));
-        dealer.recieveCard(new Card(CardPoint.KING, CardPattern.DIAMOND));
-        dealer.recieveCard(new Card(CardPoint.TWO, CardPattern.HEART));
+        State dealerState = StateFactory.createInitialState(
+                new Card(CardPoint.QUEEN, CardPattern.CLUB),
+                new Card(CardPoint.KING, CardPattern.DIAMOND)
+        );
+        dealerState = dealerState.draw(new Card(CardPoint.TWO, CardPattern.HEART));
 
-        FinalIncome result = new BlackJackJudge().judge(createPlayers(player), dealer);
+        assertThat(judge.judge(playerState, dealerState)).isEqualTo(GameResult.WIN);
+    }
 
-        assertThat(result.getIncomeOf(player)).isEqualTo(1000);
+    @Test
+    void 플레이어와_딜러_모두_블랙잭이면_무승부다() {
+        State playerState = StateFactory.createInitialState(
+                new Card(CardPoint.ACE, CardPattern.SPADE),
+                new Card(CardPoint.KING, CardPattern.HEART)
+        );
+
+        State dealerState = StateFactory.createInitialState(
+                new Card(CardPoint.ACE, CardPattern.CLUB),
+                new Card(CardPoint.KING, CardPattern.DIAMOND)
+        );
+
+        assertThat(judge.judge(playerState, dealerState)).isEqualTo(GameResult.TIE);
+    }
+
+    @Test
+    void 플레이어만_블랙잭이면_블랙잭_승리다() {
+        State playerState = StateFactory.createInitialState(
+                new Card(CardPoint.ACE, CardPattern.SPADE),
+                new Card(CardPoint.KING, CardPattern.HEART)
+        );
+
+        State dealerState = StateFactory.createInitialState(
+                new Card(CardPoint.TEN, CardPattern.CLUB),
+                new Card(CardPoint.NINE, CardPattern.DIAMOND)
+        );
+        dealerState = dealerState.stay();
+
+        assertThat(judge.judge(playerState, dealerState)).isEqualTo(GameResult.BLACKJACK_WIN);
     }
 
     @Test
     void 플레이어_점수가_딜러보다_높으면_승리다() {
-        Player player = createPlayer("pobi", 1000);
-        player.recieveCard(new Card(CardPoint.TEN, CardPattern.SPADE));
-        player.recieveCard(new Card(CardPoint.NINE, CardPattern.HEART));
+        State playerState = StateFactory.createInitialState(
+                new Card(CardPoint.TEN, CardPattern.SPADE),
+                new Card(CardPoint.NINE, CardPattern.HEART)
+        );
+        playerState = playerState.stay();
 
-        Dealer dealer = new Dealer();
-        dealer.recieveCard(new Card(CardPoint.TEN, CardPattern.CLUB));
-        dealer.recieveCard(new Card(CardPoint.EIGHT, CardPattern.DIAMOND));
+        State dealerState = StateFactory.createInitialState(
+                new Card(CardPoint.TEN, CardPattern.CLUB),
+                new Card(CardPoint.EIGHT, CardPattern.DIAMOND)
+        );
+        dealerState = dealerState.stay();
 
-        FinalIncome result = new BlackJackJudge().judge(createPlayers(player), dealer);
-
-        assertThat(result.getIncomeOf(player)).isEqualTo(1000);
+        assertThat(judge.judge(playerState, dealerState)).isEqualTo(GameResult.WIN);
     }
 
     @Test
     void 플레이어_점수가_딜러보다_낮으면_패배다() {
-        Player player = createPlayer("pobi", 1000);
-        player.recieveCard(new Card(CardPoint.TEN, CardPattern.SPADE));
-        player.recieveCard(new Card(CardPoint.SEVEN, CardPattern.HEART));
+        State playerState = StateFactory.createInitialState(
+                new Card(CardPoint.TEN, CardPattern.SPADE),
+                new Card(CardPoint.SEVEN, CardPattern.HEART)
+        );
+        playerState = playerState.stay();
 
-        Dealer dealer = new Dealer();
-        dealer.recieveCard(new Card(CardPoint.TEN, CardPattern.CLUB));
-        dealer.recieveCard(new Card(CardPoint.NINE, CardPattern.DIAMOND));
+        State dealerState = StateFactory.createInitialState(
+                new Card(CardPoint.TEN, CardPattern.CLUB),
+                new Card(CardPoint.NINE, CardPattern.DIAMOND)
+        );
+        dealerState = dealerState.stay();
 
-        FinalIncome result = new BlackJackJudge().judge(createPlayers(player), dealer);
-
-        assertThat(result.getIncomeOf(player)).isEqualTo(-1000);
+        assertThat(judge.judge(playerState, dealerState)).isEqualTo(GameResult.LOSE);
     }
 
     @Test
     void 동점이면_무승부다() {
-        Player player = createPlayer("pobi", 1000);
-        player.recieveCard(new Card(CardPoint.TEN, CardPattern.SPADE));
-        player.recieveCard(new Card(CardPoint.NINE, CardPattern.HEART));
+        State playerState = StateFactory.createInitialState(
+                new Card(CardPoint.TEN, CardPattern.SPADE),
+                new Card(CardPoint.NINE, CardPattern.HEART)
+        );
+        playerState = playerState.stay();
 
-        Dealer dealer = new Dealer();
-        dealer.recieveCard(new Card(CardPoint.TEN, CardPattern.CLUB));
-        dealer.recieveCard(new Card(CardPoint.NINE, CardPattern.DIAMOND));
+        State dealerState = StateFactory.createInitialState(
+                new Card(CardPoint.TEN, CardPattern.CLUB),
+                new Card(CardPoint.NINE, CardPattern.DIAMOND)
+        );
+        dealerState = dealerState.stay();
 
-        FinalIncome result = new BlackJackJudge().judge(createPlayers(player), dealer);
+        assertThat(judge.judge(playerState, dealerState)).isEqualTo(GameResult.TIE);
+    }
 
-        assertThat(result.getIncomeOf(player)).isEqualTo(0);
+    @Test
+    void 블랙잭_승리에_1000원_베팅하면_수익은_1500원이다() {
+        GameResult result = GameResult.BLACKJACK_WIN;
+
+        assertThat(result.calculateIncome(1000)).isEqualTo(1500);
+    }
+
+    @Test
+    void 세_장으로_21이면_블랙잭이_아니라_일반_승리다() {
+        State playerState = StateFactory.createInitialState(
+                new Card(CardPoint.SEVEN, CardPattern.SPADE),
+                new Card(CardPoint.SEVEN, CardPattern.HEART)
+        );
+        playerState = playerState.draw(new Card(CardPoint.SEVEN, CardPattern.CLUB));
+        playerState = playerState.stay();
+
+        State dealerState = StateFactory.createInitialState(
+                new Card(CardPoint.TEN, CardPattern.DIAMOND),
+                new Card(CardPoint.NINE, CardPattern.CLUB)
+        );
+        dealerState = dealerState.stay();
+
+        assertThat(judge.judge(playerState, dealerState)).isEqualTo(GameResult.WIN);
     }
 }
