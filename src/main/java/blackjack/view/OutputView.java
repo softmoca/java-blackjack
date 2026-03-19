@@ -9,10 +9,10 @@ import java.util.Map;
 public class OutputView {
     private static final String lineSeparator = System.lineSeparator();
 
-    public void printInitDraw(Players players, Dealer dealer) {
+    public void printInitDeal(Players players, Dealer dealer) {
         System.out.printf(lineSeparator + "딜러와 %s에게 2장을 나누었습니다." + lineSeparator,
                 String.join(", ", players.getNames()));
-        System.out.printf("딜러카드: %s" + lineSeparator, dealer.getFirstCardNames());
+        System.out.printf("딜러: %s" + lineSeparator, dealer.getFirstCardNames());
 
         for (Player player : players.getPlayers()) {
             printCard(player);
@@ -28,8 +28,8 @@ public class OutputView {
     }
 
     public void printFinalCardResult(Dealer dealer, Players players) {
-        System.out.printf(lineSeparator + "딜러카드: %s - 결과: %d" + lineSeparator,
-                String.join(", ", dealer.getCardNames()), dealer.getTotalPoint());
+        System.out.printf(lineSeparator + "딜러 카드: %s - 결과: %d" + lineSeparator,
+                dealer.getCardNames(), dealer.getTotalPoint());
         for (Player player : players.getPlayers()) {
             System.out.printf("%s카드: %s - 결과: %d" + lineSeparator, player.getName(), player.getCardNames(),
                     player.getTotalPoint());
@@ -37,12 +37,11 @@ public class OutputView {
     }
 
     public void printFinalGameResult(FinalIncome finalIncome) {
-        System.out.println("\n## 최종 수익");
+        System.out.println(lineSeparator + "## 최종 수익");
         System.out.println("딜러: " + finalIncome.getDealerIncome());
 
         for (Map.Entry<Player, Integer> entry : finalIncome.getPlayerIncomeResults().entrySet()) {
             System.out.println(entry.getKey().getName() + ": " + entry.getValue());
         }
     }
-
 }

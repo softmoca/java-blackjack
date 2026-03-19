@@ -2,7 +2,6 @@ package blackjack.controller;
 
 import blackjack.domain.deck.Deck;
 import blackjack.domain.game.BlackJackGame;
-import blackjack.domain.game.DefaultDealerHitStrategy;
 import blackjack.domain.game.FinalIncome;
 import blackjack.domain.participant.Dealer;
 import blackjack.domain.participant.Players;
@@ -19,16 +18,15 @@ public class BlackJackController {
         Dealer dealer = new Dealer();
         Deck deck = new Deck();
 
-        BlackJackGame blackJackGame = startGame(players, dealer, deck);
-        playGame(blackJackGame);
-        showGameResult(blackJackGame, dealer, players);
+        BlackJackGame game = new BlackJackGame(players, dealer, deck);
+        startGame(game, players, dealer);
+        playGame(game);
+        showGameResult(game, dealer, players);
     }
 
-    private BlackJackGame startGame(Players players, Dealer dealer, Deck deck) {
-        BlackJackGame blackJackGame = new BlackJackGame(players, dealer, deck);
-        blackJackGame.initDraw();
-        outputView.printInitDraw(players, dealer);
-        return blackJackGame;
+    private void startGame(BlackJackGame game, Players players, Dealer dealer) {
+        game.initDeal();
+        outputView.printInitDeal(players, dealer);
     }
 
     private void playGame(BlackJackGame game) {
@@ -37,17 +35,12 @@ public class BlackJackController {
                 outputView::printCard
         );
 
-        game.proceedDealerTurn(
-                new DefaultDealerHitStrategy(),
-                outputView::printDealerDraw
-        );
+        game.proceedDealerTurn(outputView::printDealerDraw);
     }
 
-
-    private void showGameResult(BlackJackGame blackJackGame, Dealer dealer, Players players) {
+    private void showGameResult(BlackJackGame game, Dealer dealer, Players players) {
         outputView.printFinalCardResult(dealer, players);
-        FinalIncome result = blackJackGame.judgeGameResult();
+        FinalIncome result = game.judgeGameResult();
         outputView.printFinalGameResult(result);
     }
-
 }
