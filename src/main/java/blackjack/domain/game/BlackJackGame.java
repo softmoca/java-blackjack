@@ -4,10 +4,12 @@ import blackjack.domain.deck.Deck;
 import blackjack.domain.participant.Dealer;
 import blackjack.domain.participant.Player;
 import blackjack.domain.participant.Players;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class BlackJackGame {
-    private static final int INIT_DRAW_CARD_COUNT = 2;
+
     private final Players players;
     private final Dealer dealer;
     private final Deck deck;
@@ -18,40 +20,51 @@ public class BlackJackGame {
         this.deck = deck;
     }
 
-    public void initDraw() {
-        for (int i = 0; i < INIT_DRAW_CARD_COUNT; i++) {
-            players.recieveCard(deck);
-            dealer.recieveCard(deck.draw());
-        }
+    public void initDeal() {
+        players.initDeal(deck);
+        dealer.initDeal(deck.draw(), deck.draw());
     }
 
     public void proceedAllPlayersTurn(PlayerHitStrategy hitStrategy,
                                       Consumer<Player> onCardReceived) {
         for (Player player : players.getPlayers()) {
-            proceedPlayerTurn(player, hitStrategy,
-                    () -> onCardReceived.accept(player));
+            proceedPlayerTurn(player, hitStrategy, onCardReceived);
         }
     }
 
     private void proceedPlayerTurn(Player player, PlayerHitStrategy hitStrategy,
-                                   Runnable onCardReceived) {
-        while (player.shouldDraw() && hitStrategy.shouldHit(player)) {
-            player.recieveCard(deck.draw());
-            onCardReceived.run();
+                                   Consumer<Player> onCardReceived) {
+        while (!player.isFinished() && hitStrategy.shouldHit(player.getName())) {
+            player.draw(deck.draw());
+            onCardReceived.accept(player);
+        }
+        if (!player.isFinished()) {
+            player.stay();
         }
     }
 
-    public void proceedDealerTurn(DealerHitStrategy hitStrategy,
-                                  Runnable onCardReceived) {
-        while (hitStrategy.shouldHit(dealer)) {
-            dealer.recieveCard(deck.draw());
+    public void proceedDealerTurn(Runnable onCardReceived) {
+        while (dealer.shouldDraw()) {
+            dealer.draw(deck.draw());
             onCardReceived.run();
+        }
+        if (!dealer.isFinished()) {
+            dealer.stay();
         }
     }
 
     public FinalIncome judgeGameResult() {
-        BlackJackJudge blackJackJudge = new BlackJackJudge();
-        return blackJackJudge.judge(players, dealer);
-    }
+        BlackJackJudge judge = new BlackJackJudge();
+        Map<Player, Integer> incomeResult = new LinkedHashMap<>();
+        int dealerIncome = 0;
 
+        for (Player player : players.getPlayers()) {
+            GameResult gameResult = judge.judge(player.getState(), dealer.getState());
+            int income = gameResult.calculateIncome(player.getBetAmount());
+            incomeResult.put(player, income);
+            dealerIncome -= income;
+        }
+
+        return new FinalIncome(dealerIncome, incomeResult);
+    }
 }

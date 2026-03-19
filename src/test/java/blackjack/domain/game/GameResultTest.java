@@ -13,14 +13,14 @@ public class GameResultTest {
     @EnumSource(GameResult.class)
     void 게임결과는_승__블랙잭승_무_패_만있다(GameResult gameResult) {
         assertTrue(gameResult == GameResult.WIN
-                || gameResult == GameResult.BACKJACK_WIN
+                || gameResult == GameResult.BLACKJACK_WIN
                 || gameResult == GameResult.TIE
                 || gameResult == GameResult.LOSE);
     }
 
     @Test
     void 블랙잭_승리시_베팅금액의_1_5배를_수익으로_받는다() {
-        assertThat(GameResult.BACKJACK_WIN.calculateIncome(1000)).isEqualTo(1500);
+        assertThat(GameResult.BLACKJACK_WIN.calculateIncome(1000)).isEqualTo(1500);
     }
 
     @Test
