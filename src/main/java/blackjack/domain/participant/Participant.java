@@ -1,53 +1,63 @@
 package blackjack.domain.participant;
 
 import blackjack.domain.card.Card;
-import blackjack.domain.card.Hand;
+import blackjack.domain.state.State;
+import blackjack.domain.state.StateFactory;
 
 public abstract class Participant {
 
     private final Name name;
-    private final Hand hand;
+    private State state;
 
     protected Participant(Name name) {
         this.name = name;
-        this.hand = new Hand();
     }
 
-    public abstract void recieveCard(Card card);
-
-    public int getCardCount() {
-        return hand.getCount();
+    public void initDeal(Card first, Card second) {
+        this.state = StateFactory.createInitialState(first, second);
     }
 
-    public String getCardNames() {
-        return hand.getCardNames();
+    public void draw(Card card) {
+        this.state = state.draw(card);
     }
 
+    public void stay() {
+        this.state = state.stay();
+    }
 
-    public int getTotalPoint() {
-        return hand.getTotalPoint();
+    public boolean isFinished() {
+        return state.isFinished();
     }
 
     public boolean isBust() {
-        return hand.isBust();
+        return state.isBust();
+    }
+
+    public boolean isBlackjack() {
+        return state.isBlackjack();
+    }
+
+    public int getTotalPoint() {
+        return state.score();
     }
 
     public String getName() {
         return name.getValue();
     }
 
-    public void addCard(Card card) {
-        hand.addCard(card);
+    public State getState() {
+        return state;
     }
 
+    public String getCardNames() {
+        return state.hand().getCardNames();
+    }
 
     public String getFirstCardName() {
-        return hand.getFirstCardName();
+        return state.hand().getFirstCardName();
     }
 
-    public abstract boolean shouldDraw();
-
-    public boolean isBlackJack() {
-        return hand.isBlackJack();
+    public int getCardCount() {
+        return state.hand().getCount();
     }
 }

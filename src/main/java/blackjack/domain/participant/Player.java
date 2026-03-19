@@ -1,7 +1,5 @@
 package blackjack.domain.participant;
 
-import blackjack.domain.card.Card;
-
 public class Player extends Participant {
 
     private final BetAmount betAmount;
@@ -11,18 +9,7 @@ public class Player extends Participant {
         this.betAmount = betAmount;
     }
 
-    @Override
-    public void recieveCard(Card card) {
-        addCard(card);
-    }
-
-    @Override
-    public boolean shouldDraw() {
-        return !isBust();
-    }
-
     public int getBetAmount() {
         return betAmount.getAmount();
     }
-
 }

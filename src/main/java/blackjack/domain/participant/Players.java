@@ -11,9 +11,9 @@ public class Players {
         this.players = new ArrayList<>(players);
     }
 
-    public void recieveCard(Deck deck) {
+    public void initDeal(Deck deck) {
         for (Player player : players) {
-            player.recieveCard(deck.draw());
+            player.initDeal(deck.draw(), deck.draw());
         }
     }
 

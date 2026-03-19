@@ -1,7 +1,5 @@
 package blackjack.domain.participant;
 
-import blackjack.domain.card.Card;
-
 public class Dealer extends Participant {
 
     private static final int DEALER_STAND_POINT = 17;
@@ -11,20 +9,11 @@ public class Dealer extends Participant {
         super(new Name(DEALER_NAME));
     }
 
-    @Override
-    public void recieveCard(Card card) {
-        addCard(card);
+    public boolean shouldDraw() {
+        return !isFinished() && getTotalPoint() < DEALER_STAND_POINT;
     }
 
     public String getFirstCardNames() {
         return getFirstCardName();
     }
-
-
-    @Override
-    public boolean shouldDraw() {
-        return getTotalPoint() < DEALER_STAND_POINT;
-    }
-
-
 }
