@@ -1,5 +1,6 @@
 package blackjack.view;
 
+import blackjack.domain.game.PlayerAction;
 import blackjack.domain.participant.BetAmount;
 import blackjack.domain.participant.Name;
 import blackjack.domain.participant.Player;
@@ -30,18 +31,9 @@ public class InputView {
         return new BetAmount(Integer.parseInt(scanner.nextLine().trim()));
     }
 
-    public boolean readHitAnswer(String name) {
-        System.out.printf(lineSeparator + "%s는 한장의 카드를 더 받겠습니까?(예는 y, 아니오는 n)" + lineSeparator, name);
+    public PlayerAction readPlayerAction(String name) {
+        System.out.printf(lineSeparator + "%s는 한장의 카드를 더 받겠습니까?(예는 y, 아니오는 n, 서렌더는 s)" + lineSeparator, name);
         String input = scanner.nextLine();
-        validateHitAnswer(input);
-
-        return input.equals("y");
+        return PlayerAction.from(input);
     }
-
-    private void validateHitAnswer(String input) {
-        if (!input.equals("y") && !input.equals("n")) {
-            throw new IllegalArgumentException("[ERROR] y 또는 n로 입력해주세요.");
-        }
-    }
-
 }

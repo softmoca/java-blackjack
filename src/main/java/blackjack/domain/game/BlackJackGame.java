@@ -34,12 +34,18 @@ public class BlackJackGame {
 
     private void proceedPlayerTurn(Player player, PlayerHitStrategy hitStrategy,
                                    Consumer<Player> onCardReceived) {
-        while (!player.isFinished() && hitStrategy.shouldHit(player.getName())) {
+        while (!player.isFinished()) {
+            PlayerAction action = hitStrategy.chooseAction(player.getName());
+            if (action == PlayerAction.SURRENDER) {
+                player.surrender();
+                return;
+            }
+            if (action == PlayerAction.STAY) {
+                player.stay();
+                return;
+            }
             player.draw(deck.draw());
             onCardReceived.accept(player);
-        }
-        if (!player.isFinished()) {
-            player.stay();
         }
     }
 

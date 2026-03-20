@@ -1,5 +1,6 @@
 package blackjack.view;
 
+import blackjack.domain.game.PlayerAction;
 import blackjack.domain.game.PlayerHitStrategy;
 
 public class ConsolePlayerHitStrategy implements PlayerHitStrategy {
@@ -10,7 +11,7 @@ public class ConsolePlayerHitStrategy implements PlayerHitStrategy {
     }
 
     @Override
-    public boolean shouldHit(String playerName) {
-        return inputView.readHitAnswer(playerName);
+    public PlayerAction chooseAction(String playerName) {
+        return inputView.readPlayerAction(playerName);
     }
 }
