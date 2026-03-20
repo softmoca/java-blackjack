@@ -31,14 +31,13 @@ class BlackJackGameTest {
         Players players = new Players(List.of(pobi, jason));
         Dealer dealer = new Dealer();
 
-        // pobi 2장 → jason 2장 → dealer 2장 순서
         Deck deck = new Deck(new FixedOrderShuffleStrategy(List.of(
-                new Card(CardPoint.NINE, CardPattern.CLUB),    // dealer 2번째
-                new Card(CardPoint.TEN, CardPattern.CLUB),     // dealer 1번째
-                new Card(CardPoint.SEVEN, CardPattern.HEART),  // jason 2번째
-                new Card(CardPoint.SIX, CardPattern.HEART),    // jason 1번째
-                new Card(CardPoint.THREE, CardPattern.SPADE),  // pobi 2번째
-                new Card(CardPoint.TWO, CardPattern.SPADE)     // pobi 1번째
+                new Card(CardPoint.NINE, CardPattern.CLUB),
+                new Card(CardPoint.TEN, CardPattern.CLUB),
+                new Card(CardPoint.SEVEN, CardPattern.HEART),
+                new Card(CardPoint.SIX, CardPattern.HEART),
+                new Card(CardPoint.THREE, CardPattern.SPADE),
+                new Card(CardPoint.TWO, CardPattern.SPADE)
         )));
 
         BlackJackGame game = new BlackJackGame(players, dealer, deck);
@@ -55,13 +54,11 @@ class BlackJackGameTest {
         Players players = new Players(List.of(pobi));
         Dealer dealer = new Dealer();
 
-        // initDeal: pobi가 먼저 2장, 그 다음 dealer가 2장
-        // draw()는 removeLast()이므로 마지막이 먼저 뽑힘
         Deck deck = new Deck(new FixedOrderShuffleStrategy(List.of(
-                new Card(CardPoint.FIVE, CardPattern.CLUB),    // dealer 2번째
-                new Card(CardPoint.THREE, CardPattern.DIAMOND),// dealer 1번째
-                new Card(CardPoint.KING, CardPattern.SPADE),   // pobi 2번째
-                new Card(CardPoint.ACE, CardPattern.HEART)     // pobi 1번째 (먼저 뽑힘)
+                new Card(CardPoint.FIVE, CardPattern.CLUB),
+                new Card(CardPoint.THREE, CardPattern.DIAMOND),
+                new Card(CardPoint.KING, CardPattern.SPADE),
+                new Card(CardPoint.ACE, CardPattern.HEART)
         )));
 
         BlackJackGame game = new BlackJackGame(players, dealer, deck);
@@ -74,24 +71,24 @@ class BlackJackGameTest {
     // --- proceedAllPlayersTurn 테스트 ---
 
     @Test
-    void 플레이어가_y를_선택하면_카드를_한장_더_받는다() {
+    void 플레이어가_HIT을_선택하면_카드를_한장_더_받는다() {
         Player pobi = createPlayer("pobi", 1000);
         Players players = new Players(List.of(pobi));
         Dealer dealer = new Dealer();
 
-        // pobi: 2+3=5, 추가로 4 받아도 9 → 버스트 없음
         Deck deck = new Deck(new FixedOrderShuffleStrategy(List.of(
-                new Card(CardPoint.FOUR, CardPattern.CLUB),    // pobi 추가 카드
-                new Card(CardPoint.TEN, CardPattern.CLUB),     // dealer 2번째
-                new Card(CardPoint.NINE, CardPattern.CLUB),    // dealer 1번째
-                new Card(CardPoint.THREE, CardPattern.HEART),  // pobi 2번째
-                new Card(CardPoint.TWO, CardPattern.SPADE)     // pobi 1번째
+                new Card(CardPoint.FOUR, CardPattern.CLUB),
+                new Card(CardPoint.TEN, CardPattern.CLUB),
+                new Card(CardPoint.NINE, CardPattern.CLUB),
+                new Card(CardPoint.THREE, CardPattern.HEART),
+                new Card(CardPoint.TWO, CardPattern.SPADE)
         )));
 
         BlackJackGame game = new BlackJackGame(players, dealer, deck);
         game.initDeal();
 
-        PlayerHitStrategy strategy = new FixedPlayerHitStrategy(true, false);
+        PlayerHitStrategy strategy = new FixedPlayerHitStrategy(
+                PlayerAction.HIT, PlayerAction.STAY);
 
         game.proceedAllPlayersTurn(strategy, p -> {
         });
@@ -101,23 +98,22 @@ class BlackJackGameTest {
     }
 
     @Test
-    void 플레이어가_n을_선택하면_카드를_받지_않고_Stay된다() {
+    void 플레이어가_STAY를_선택하면_카드를_받지_않는다() {
         Player pobi = createPlayer("pobi", 1000);
         Players players = new Players(List.of(pobi));
         Dealer dealer = new Dealer();
 
-        // pobi: 5+6=11, dealer: 10+9=19
         Deck deck = new Deck(new FixedOrderShuffleStrategy(List.of(
-                new Card(CardPoint.NINE, CardPattern.CLUB),    // dealer 2번째
-                new Card(CardPoint.TEN, CardPattern.CLUB),     // dealer 1번째
-                new Card(CardPoint.SIX, CardPattern.HEART),    // pobi 2번째
-                new Card(CardPoint.FIVE, CardPattern.SPADE)    // pobi 1번째
+                new Card(CardPoint.NINE, CardPattern.CLUB),
+                new Card(CardPoint.TEN, CardPattern.CLUB),
+                new Card(CardPoint.SIX, CardPattern.HEART),
+                new Card(CardPoint.FIVE, CardPattern.SPADE)
         )));
 
         BlackJackGame game = new BlackJackGame(players, dealer, deck);
         game.initDeal();
 
-        PlayerHitStrategy strategy = new FixedPlayerHitStrategy(false);
+        PlayerHitStrategy strategy = new FixedPlayerHitStrategy(PlayerAction.STAY);
 
         game.proceedAllPlayersTurn(strategy, p -> {
         });
@@ -133,23 +129,24 @@ class BlackJackGameTest {
         Dealer dealer = new Dealer();
 
         Deck deck = new Deck(new FixedOrderShuffleStrategy(List.of(
-                new Card(CardPoint.JACK, CardPattern.CLUB),    // pobi 추가 카드
-                new Card(CardPoint.THREE, CardPattern.CLUB),   // dealer 2번째
-                new Card(CardPoint.FOUR, CardPattern.CLUB),    // dealer 1번째
-                new Card(CardPoint.KING, CardPattern.CLUB),    // pobi 2번째
-                new Card(CardPoint.QUEEN, CardPattern.CLUB)    // pobi 1번째
+                new Card(CardPoint.JACK, CardPattern.CLUB),
+                new Card(CardPoint.THREE, CardPattern.CLUB),
+                new Card(CardPoint.FOUR, CardPattern.CLUB),
+                new Card(CardPoint.KING, CardPattern.CLUB),
+                new Card(CardPoint.QUEEN, CardPattern.CLUB)
         )));
 
         BlackJackGame game = new BlackJackGame(players, dealer, deck);
-        game.initDeal(); // pobi: Q + K = 20
+        game.initDeal();
 
-        PlayerHitStrategy strategy = new FixedPlayerHitStrategy(true, true, true);
+        PlayerHitStrategy strategy = new FixedPlayerHitStrategy(
+                PlayerAction.HIT, PlayerAction.HIT, PlayerAction.HIT);
 
         game.proceedAllPlayersTurn(strategy, p -> {
         });
 
         assertThat(pobi.isBust()).isTrue();
-        assertThat(pobi.getCardCount()).isEqualTo(3); // 초기 2장 + 버스트 1장
+        assertThat(pobi.getCardCount()).isEqualTo(3);
     }
 
     @Test
@@ -158,21 +155,21 @@ class BlackJackGameTest {
         Players players = new Players(List.of(pobi));
         Dealer dealer = new Dealer();
 
-        // pobi: 2+3=5, 추가로 2,2 받아도 9 → 버스트 없음
         Deck deck = new Deck(new FixedOrderShuffleStrategy(List.of(
-                new Card(CardPoint.TWO, CardPattern.DIAMOND),  // pobi 추가 2번째
-                new Card(CardPoint.TWO, CardPattern.CLUB),     // pobi 추가 1번째
-                new Card(CardPoint.TEN, CardPattern.CLUB),     // dealer 2번째
-                new Card(CardPoint.NINE, CardPattern.CLUB),    // dealer 1번째
-                new Card(CardPoint.THREE, CardPattern.HEART),  // pobi 2번째
-                new Card(CardPoint.TWO, CardPattern.SPADE)     // pobi 1번째
+                new Card(CardPoint.TWO, CardPattern.DIAMOND),
+                new Card(CardPoint.TWO, CardPattern.CLUB),
+                new Card(CardPoint.TEN, CardPattern.CLUB),
+                new Card(CardPoint.NINE, CardPattern.CLUB),
+                new Card(CardPoint.THREE, CardPattern.HEART),
+                new Card(CardPoint.TWO, CardPattern.SPADE)
         )));
 
         BlackJackGame game = new BlackJackGame(players, dealer, deck);
         game.initDeal();
 
         List<Player> receivedPlayers = new ArrayList<>();
-        PlayerHitStrategy strategy = new FixedPlayerHitStrategy(true, true, false);
+        PlayerHitStrategy strategy = new FixedPlayerHitStrategy(
+                PlayerAction.HIT, PlayerAction.HIT, PlayerAction.STAY);
 
         game.proceedAllPlayersTurn(strategy, receivedPlayers::add);
 
@@ -188,13 +185,12 @@ class BlackJackGameTest {
         Players players = new Players(List.of(pobi));
         Dealer dealer = new Dealer();
 
-        // dealer: 3 + 5 = 8 → shouldDraw true → 추가 카드 받음
         Deck deck = new Deck(new FixedOrderShuffleStrategy(List.of(
-                new Card(CardPoint.TEN, CardPattern.HEART),    // dealer 추가 카드 (8+10=18, stop)
-                new Card(CardPoint.FIVE, CardPattern.CLUB),    // dealer 2번째
-                new Card(CardPoint.THREE, CardPattern.DIAMOND),// dealer 1번째
-                new Card(CardPoint.NINE, CardPattern.SPADE),   // pobi 2번째
-                new Card(CardPoint.EIGHT, CardPattern.HEART)   // pobi 1번째
+                new Card(CardPoint.TEN, CardPattern.HEART),
+                new Card(CardPoint.FIVE, CardPattern.CLUB),
+                new Card(CardPoint.THREE, CardPattern.DIAMOND),
+                new Card(CardPoint.NINE, CardPattern.SPADE),
+                new Card(CardPoint.EIGHT, CardPattern.HEART)
         )));
 
         BlackJackGame game = new BlackJackGame(players, dealer, deck);
@@ -214,12 +210,11 @@ class BlackJackGameTest {
         Players players = new Players(List.of(pobi));
         Dealer dealer = new Dealer();
 
-        // dealer: 10 + 7 = 17 → shouldDraw false
         Deck deck = new Deck(new FixedOrderShuffleStrategy(List.of(
-                new Card(CardPoint.SEVEN, CardPattern.CLUB),   // dealer 2번째
-                new Card(CardPoint.TEN, CardPattern.DIAMOND),  // dealer 1번째
-                new Card(CardPoint.NINE, CardPattern.SPADE),   // pobi 2번째
-                new Card(CardPoint.EIGHT, CardPattern.HEART)   // pobi 1번째
+                new Card(CardPoint.SEVEN, CardPattern.CLUB),
+                new Card(CardPoint.TEN, CardPattern.DIAMOND),
+                new Card(CardPoint.NINE, CardPattern.SPADE),
+                new Card(CardPoint.EIGHT, CardPattern.HEART)
         )));
 
         BlackJackGame game = new BlackJackGame(players, dealer, deck);
@@ -230,7 +225,7 @@ class BlackJackGameTest {
 
         assertThat(dealer.getCardCount()).isEqualTo(2);
         assertThat(callbackLog).isEmpty();
-        assertThat(dealer.isFinished()).isTrue(); // stay 처리됨
+        assertThat(dealer.isFinished()).isTrue();
     }
 
     // --- judgeGameResult 테스트 ---
@@ -241,20 +236,19 @@ class BlackJackGameTest {
         Players players = new Players(List.of(pobi));
         Dealer dealer = new Dealer();
 
-        // pobi: 10 + 9 = 19, dealer: 10 + 7 = 17
         Deck deck = new Deck(new FixedOrderShuffleStrategy(List.of(
-                new Card(CardPoint.SEVEN, CardPattern.CLUB),   // dealer 2번째
-                new Card(CardPoint.TEN, CardPattern.DIAMOND),  // dealer 1번째
-                new Card(CardPoint.NINE, CardPattern.SPADE),   // pobi 2번째
-                new Card(CardPoint.TEN, CardPattern.HEART)     // pobi 1번째
+                new Card(CardPoint.SEVEN, CardPattern.CLUB),
+                new Card(CardPoint.TEN, CardPattern.DIAMOND),
+                new Card(CardPoint.NINE, CardPattern.SPADE),
+                new Card(CardPoint.TEN, CardPattern.HEART)
         )));
 
         BlackJackGame game = new BlackJackGame(players, dealer, deck);
         game.initDeal();
 
-        // 플레이어 stay, 딜러도 stay (17이상)
-        game.proceedAllPlayersTurn(new FixedPlayerHitStrategy(false), p -> {
-        });
+        game.proceedAllPlayersTurn(
+                new FixedPlayerHitStrategy(PlayerAction.STAY), p -> {
+                });
         game.proceedDealerTurn(() -> {
         });
 
@@ -270,26 +264,90 @@ class BlackJackGameTest {
         Players players = new Players(List.of(pobi));
         Dealer dealer = new Dealer();
 
-        // pobi: A + K = 블랙잭, dealer: 10 + 9 = 19
         Deck deck = new Deck(new FixedOrderShuffleStrategy(List.of(
-                new Card(CardPoint.NINE, CardPattern.CLUB),    // dealer 2번째
-                new Card(CardPoint.TEN, CardPattern.DIAMOND),  // dealer 1번째
-                new Card(CardPoint.KING, CardPattern.SPADE),   // pobi 2번째
-                new Card(CardPoint.ACE, CardPattern.HEART)     // pobi 1번째
+                new Card(CardPoint.NINE, CardPattern.CLUB),
+                new Card(CardPoint.TEN, CardPattern.DIAMOND),
+                new Card(CardPoint.KING, CardPattern.SPADE),
+                new Card(CardPoint.ACE, CardPattern.HEART)
         )));
 
         BlackJackGame game = new BlackJackGame(players, dealer, deck);
         game.initDeal();
 
-        // 블랙잭이라 이미 finished
-        game.proceedAllPlayersTurn(new FixedPlayerHitStrategy(false), p -> {
-        });
+        game.proceedAllPlayersTurn(
+                new FixedPlayerHitStrategy(PlayerAction.STAY), p -> {
+                });
         game.proceedDealerTurn(() -> {
         });
 
         FinalIncome result = game.judgeGameResult();
 
         assertThat(result.getIncomeOf(pobi)).isEqualTo(15000);
+        assertThat(result.getDealerIncome()).isEqualTo(-15000);
+    }
+
+    // --- 서렌더 테스트 ---
+
+    @Test
+    void 플레이어가_서렌더하면_베팅금액의_절반을_잃는다() {
+        Player pobi = createPlayer("pobi", 10000);
+        Players players = new Players(List.of(pobi));
+        Dealer dealer = new Dealer();
+
+        Deck deck = new Deck(new FixedOrderShuffleStrategy(List.of(
+                new Card(CardPoint.SEVEN, CardPattern.CLUB),
+                new Card(CardPoint.TEN, CardPattern.DIAMOND),
+                new Card(CardPoint.SIX, CardPattern.HEART),
+                new Card(CardPoint.TEN, CardPattern.SPADE)
+        )));
+
+        BlackJackGame game = new BlackJackGame(players, dealer, deck);
+        game.initDeal();
+
+        game.proceedAllPlayersTurn(
+                new FixedPlayerHitStrategy(PlayerAction.SURRENDER), p -> {
+                });
+        game.proceedDealerTurn(() -> {
+        });
+
+        FinalIncome result = game.judgeGameResult();
+
+        assertThat(pobi.isSurrender()).isTrue();
+        assertThat(result.getIncomeOf(pobi)).isEqualTo(-5000);
+        assertThat(result.getDealerIncome()).isEqualTo(5000);
+    }
+
+    @Test
+    void 한명은_서렌더_한명은_승리할_수_있다() {
+        Player pobi = createPlayer("pobi", 10000);
+        Player jason = createPlayer("jason", 20000);
+        Players players = new Players(List.of(pobi, jason));
+        Dealer dealer = new Dealer();
+
+        Deck deck = new Deck(new FixedOrderShuffleStrategy(List.of(
+                new Card(CardPoint.SEVEN, CardPattern.CLUB),
+                new Card(CardPoint.TEN, CardPattern.DIAMOND),
+                new Card(CardPoint.NINE, CardPattern.HEART),
+                new Card(CardPoint.TEN, CardPattern.HEART),
+                new Card(CardPoint.SIX, CardPattern.SPADE),
+                new Card(CardPoint.TEN, CardPattern.SPADE)
+        )));
+
+        BlackJackGame game = new BlackJackGame(players, dealer, deck);
+        game.initDeal();
+
+        game.proceedAllPlayersTurn(
+                new FixedPlayerHitStrategy(
+                        PlayerAction.SURRENDER, PlayerAction.STAY),
+                p -> {
+                });
+        game.proceedDealerTurn(() -> {
+        });
+
+        FinalIncome result = game.judgeGameResult();
+
+        assertThat(result.getIncomeOf(pobi)).isEqualTo(-5000);
+        assertThat(result.getIncomeOf(jason)).isEqualTo(20000);
         assertThat(result.getDealerIncome()).isEqualTo(-15000);
     }
 }

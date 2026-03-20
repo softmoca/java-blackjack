@@ -5,17 +5,17 @@ import java.util.List;
 import java.util.Queue;
 
 public class FixedPlayerHitStrategy implements PlayerHitStrategy {
-    private final Queue<Boolean> answers;
+    private final Queue<PlayerAction> actions;
 
-    public FixedPlayerHitStrategy(Boolean... answers) {
-        this.answers = new LinkedList<>(List.of(answers));
+    public FixedPlayerHitStrategy(PlayerAction... actions) {
+        this.actions = new LinkedList<>(List.of(actions));
     }
 
     @Override
-    public boolean shouldHit(String playerName) {
-        if (answers.isEmpty()) {
-            return false;
+    public PlayerAction chooseAction(String playerName) {
+        if (actions.isEmpty()) {
+            return PlayerAction.STAY;
         }
-        return answers.poll();
+        return actions.poll();
     }
 }
