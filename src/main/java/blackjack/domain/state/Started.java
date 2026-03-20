@@ -21,6 +21,11 @@ public abstract class Started implements State {
     }
 
     @Override
+    public boolean isSurrender() {
+        return false;
+    }
+
+    @Override
     public boolean isBlackjack() {
         return hand.isBlackJack();
     }

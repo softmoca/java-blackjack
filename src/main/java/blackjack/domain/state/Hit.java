@@ -22,4 +22,10 @@ public class Hit extends Running {
     public State stay() {
         return new Stay(hand);
     }
+
+    @Override
+    public State surrender() {        // ← 추가
+        return new Surrender(hand);
+    }
+
 }

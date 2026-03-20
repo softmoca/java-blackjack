@@ -20,6 +20,11 @@ public abstract class Finished extends Started {
     }
 
     @Override
+    public State surrender() {        // ← 추가
+        throw new UnsupportedOperationException("이미 종료된 상태에서는 서렌더할 수 없습니다.");
+    }
+
+    @Override
     public boolean isFinished() {
         return true;
     }

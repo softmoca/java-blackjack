@@ -9,6 +9,8 @@ public interface State {
 
     State stay();
 
+    State surrender();
+
     boolean isFinished();
 
     Hand hand();
@@ -16,6 +18,8 @@ public interface State {
     boolean isBust();
 
     boolean isBlackjack();
+
+    boolean isSurrender();
 
     int score();
 }

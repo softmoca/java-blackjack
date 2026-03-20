@@ -25,6 +25,10 @@ public abstract class Participant {
         this.state = state.stay();
     }
 
+    public void surrender() {
+        this.state = state.surrender();
+    }
+
     public boolean isFinished() {
         return state.isFinished();
     }
@@ -35,6 +39,10 @@ public abstract class Participant {
 
     public boolean isBlackjack() {
         return state.isBlackjack();
+    }
+
+    public boolean isSurrender() {
+        return state.isSurrender();
     }
 
     public int getTotalPoint() {

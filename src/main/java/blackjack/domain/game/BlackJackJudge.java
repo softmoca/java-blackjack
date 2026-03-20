@@ -5,6 +5,10 @@ import blackjack.domain.state.State;
 public class BlackJackJudge {
 
     public GameResult judge(State playerState, State dealerState) {
+        if (playerState.isSurrender()) {
+            return GameResult.SURRENDER;
+        }
+
         if (playerState.isBust()) {
             return GameResult.LOSE;
         }

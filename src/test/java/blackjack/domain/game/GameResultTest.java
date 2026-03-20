@@ -14,6 +14,7 @@ public class GameResultTest {
     void 게임결과는_승__블랙잭승_무_패_만있다(GameResult gameResult) {
         assertTrue(gameResult == GameResult.WIN
                 || gameResult == GameResult.BLACKJACK_WIN
+                || gameResult == GameResult.SURRENDER
                 || gameResult == GameResult.TIE
                 || gameResult == GameResult.LOSE);
     }
@@ -37,4 +38,10 @@ public class GameResultTest {
     void 패배시_베팅금액만큼_손실이다() {
         assertThat(GameResult.LOSE.calculateIncome(1000)).isEqualTo(-1000);
     }
+
+    @Test
+    void 서렌더시_베팅금액의_절반을_잃는다() {
+        assertThat(GameResult.SURRENDER.calculateIncome(10000)).isEqualTo(-5000);
+    }
+
 }
