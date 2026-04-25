@@ -35,9 +35,7 @@ public class BlackJackGame {
     public void playerHit() {
         Player player = getCurrentPlayer();
         player.recieveCard(deck.draw());
-        if (player.isBust()) {
-            moveToNextPlayer();
-        }
+        advanceIfTurnEnded(player);
     }
 
     public void playerStand() {
@@ -62,6 +60,12 @@ public class BlackJackGame {
             throw new IllegalStateException("모든 플레이어의 턴이 끝났습니다.");
         }
         return players.getPlayers().get(currentPlayerIndex);
+    }
+
+    private void advanceIfTurnEnded(Player player) {
+        if (player.isBust()) {
+            moveToNextPlayer();
+        }
     }
 
     private void moveToNextPlayer() {
