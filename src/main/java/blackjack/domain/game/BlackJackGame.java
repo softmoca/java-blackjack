@@ -4,7 +4,6 @@ import blackjack.domain.deck.Deck;
 import blackjack.domain.participant.Dealer;
 import blackjack.domain.participant.Player;
 import blackjack.domain.participant.Players;
-import java.util.function.Consumer;
 
 public class BlackJackGame {
     private static final int INIT_DRAW_CARD_COUNT = 2;
@@ -19,7 +18,6 @@ public class BlackJackGame {
         this(null, players, dealer, deck);
     }
 
-    // 새 생성자 (id 포함) — Repository 저장용
     public BlackJackGame(Long id, Players players, Dealer dealer, Deck deck) {
         this.id = id;
         this.players = players;
@@ -27,26 +25,12 @@ public class BlackJackGame {
         this.deck = deck;
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public Players getPlayers() {
-        return players;
-    }
-
-    public Dealer getDealer() {
-        return dealer;
-    }
-
-
     public void initDraw() {
         for (int i = 0; i < INIT_DRAW_CARD_COUNT; i++) {
             players.recieveCard(deck);
             dealer.recieveCard(deck.draw());
         }
     }
-    // === 새로 추가된 1회성 행동 메서드들 ===
 
     public void playerHit() {
         Player player = getCurrentPlayer();
@@ -60,7 +44,7 @@ public class BlackJackGame {
     }
 
     public void playerStand() {
-        getCurrentPlayer();  // 현재 플레이어가 유효한지 확인
+        getCurrentPlayer();
         moveToNextPlayer();
     }
 
@@ -71,8 +55,6 @@ public class BlackJackGame {
         dealer.recieveCard(deck.draw());
         return true;
     }
-
-    // === 상태 조회 ===
 
     public boolean isAllPlayersFinished() {
         return currentPlayerIndex >= players.getPlayers().size();
@@ -89,34 +71,11 @@ public class BlackJackGame {
         currentPlayerIndex++;
     }
 
-
-    public void proceedAllPlayersTurn(PlayerHitStrategy hitStrategy,
-                                      Consumer<Player> onCardReceived) {
-        for (Player player : players.getPlayers()) {
-            proceedPlayerTurn(player, hitStrategy,
-                    () -> onCardReceived.accept(player));
-        }
-    }
-
-    private void proceedPlayerTurn(Player player, PlayerHitStrategy hitStrategy,
-                                   Runnable onCardReceived) {
-        while (player.shouldDraw() && hitStrategy.shouldHit(player)) {
-            player.recieveCard(deck.draw());
-            onCardReceived.run();
-        }
-    }
-
-    public void proceedDealerTurn(DealerHitStrategy hitStrategy,
-                                  Runnable onCardReceived) {
-        while (hitStrategy.shouldHit(dealer)) {
-            dealer.recieveCard(deck.draw());
-            onCardReceived.run();
-        }
-    }
-
     public FinalIncome judgeGameResult() {
-        BlackJackJudge blackJackJudge = new BlackJackJudge();
-        return blackJackJudge.judge(players, dealer);
+        return new BlackJackJudge().judge(players, dealer);
     }
 
+    public Long getId() { return id; }
+    public Players getPlayers() { return players; }
+    public Dealer getDealer() { return dealer; }
 }
