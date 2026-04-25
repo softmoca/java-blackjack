@@ -7,11 +7,14 @@ import blackjack.application.PlayerSignupForm;
 import blackjack.application.PlayersAssembler;
 import blackjack.application.TurnState;
 import blackjack.domain.game.FinalIncome;
+import blackjack.domain.participant.BetAmount;
+import blackjack.domain.participant.Name;
 import blackjack.domain.participant.Player;
 import blackjack.domain.participant.Players;
 import blackjack.view.InputView;
 import blackjack.view.OutputView;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class BlackJackController {
 
@@ -45,11 +48,23 @@ public class BlackJackController {
     }
 
     private Players readPlayers() {
-        List<String> names = inputView.readPlayerNames();
-        List<PlayerSignupForm> forms = names.stream()
-                .map(name -> new PlayerSignupForm(name, inputView.readBetAmount(name)))
+        List<String> validNames = retryUntilValid(this::readValidPlayerNames);
+        List<PlayerSignupForm> forms = validNames.stream()
+                .map(name -> new PlayerSignupForm(name, retryUntilValid(() -> readValidBetAmount(name))))
                 .toList();
         return playersAssembler.assemble(forms);
+    }
+
+    private List<String> readValidPlayerNames() {
+        List<String> names = inputView.readPlayerNames();
+        names.forEach(Name::new);  // 도메인 검증만 위임 (버리는 호출)
+        return names;
+    }
+
+    private int readValidBetAmount(String name) {
+        int amount = inputView.readBetAmount(name);
+        new BetAmount(amount);  // 도메인 검증만 위임 (버리는 호출)
+        return amount;
     }
 
     private void playAllPlayersTurn(Long gameId) {
@@ -64,7 +79,7 @@ public class BlackJackController {
 
     private void playOnePlayerTurn(Long gameId, Player player) {
         while (true) {
-            boolean wantsHit = inputView.readHitAnswer(player.getName());
+            boolean wantsHit = retryUntilValid(() -> inputView.readHitAnswer(player.getName()));
             if (!wantsHit) {
                 service.playerStand(gameId);
                 return;
@@ -91,5 +106,15 @@ public class BlackJackController {
         outputView.printFinalCardResult(start.getDealer(), start.getPlayers());
         FinalIncome result = service.finishGame(start.getGameId());
         outputView.printFinalGameResult(result);
+    }
+
+    private <T> T retryUntilValid(Supplier<T> inputAction) {
+        while (true) {
+            try {
+                return inputAction.get();
+            } catch (IllegalArgumentException e) {
+                System.out.println(e.getMessage());
+            }
+        }
     }
 }
