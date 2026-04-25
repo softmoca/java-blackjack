@@ -1,53 +1,79 @@
 package blackjack.controller;
 
-import blackjack.domain.deck.Deck;
-import blackjack.domain.game.BlackJackGame;
-import blackjack.domain.game.DefaultDealerHitStrategy;
+import blackjack.application.BlackJackService;
+import blackjack.application.DealerHitResult;
+import blackjack.application.GameStartResult;
+import blackjack.application.TurnState;
 import blackjack.domain.game.FinalIncome;
-import blackjack.domain.participant.Dealer;
+import blackjack.domain.participant.Player;
 import blackjack.domain.participant.Players;
-import blackjack.view.ConsolePlayerHitStrategy;
 import blackjack.view.InputView;
 import blackjack.view.OutputView;
 
 public class BlackJackController {
-    private final InputView inputView = new InputView();
-    private final OutputView outputView = new OutputView();
+
+    private final InputView inputView;
+    private final OutputView outputView;
+    private final BlackJackService service;
+
+    public BlackJackController(InputView inputView, OutputView outputView, BlackJackService service) {
+        this.inputView = inputView;
+        this.outputView = outputView;
+        this.service = service;
+    }
 
     public void run() {
+        GameStartResult start = startGame();
+        playAllPlayersTurn(start.getGameId());
+        playDealerTurn(start.getGameId());
+        showResult(start);
+    }
+
+    private GameStartResult startGame() {
         Players players = inputView.readPlayers();
-        Dealer dealer = new Dealer();
-        Deck deck = new Deck();
-
-        BlackJackGame blackJackGame = startGame(players, dealer, deck);
-        playGame(blackJackGame);
-        showGameResult(blackJackGame, dealer, players);
+        GameStartResult start = service.startGame(players);
+        outputView.printInitDraw(start.getPlayers(), start.getDealer());
+        return start;
     }
 
-    private BlackJackGame startGame(Players players, Dealer dealer, Deck deck) {
-        BlackJackGame blackJackGame = new BlackJackGame(players, dealer, deck);
-        blackJackGame.initDraw();
-        outputView.printInitDraw(players, dealer);
-        return blackJackGame;
+    private void playAllPlayersTurn(Long gameId) {
+        while (true) {
+            TurnState state = service.getTurnState(gameId);
+            if (state.isAllPlayersFinished()) {
+                return;
+            }
+            playOnePlayerTurn(gameId, state.getCurrentPlayer());
+        }
     }
 
-    private void playGame(BlackJackGame game) {
-        game.proceedAllPlayersTurn(
-                new ConsolePlayerHitStrategy(inputView),
-                outputView::printCard
-        );
-
-        game.proceedDealerTurn(
-                new DefaultDealerHitStrategy(),
-                outputView::printDealerDraw
-        );
+    private void playOnePlayerTurn(Long gameId, Player player) {
+        while (true) {
+            boolean wantsHit = inputView.readHitAnswer(player.getName());
+            if (!wantsHit) {
+                service.playerStand(gameId);
+                return;
+            }
+            TurnState after = service.playerHit(gameId);
+            outputView.printCard(player);
+            if (after.isAllPlayersFinished() || !after.getCurrentPlayer().equals(player)) {
+                return;
+            }
+        }
     }
 
+    private void playDealerTurn(Long gameId) {
+        while (true) {
+            DealerHitResult result = service.dealerHitOnce(gameId);
+            if (!result.isHit()) {
+                return;
+            }
+            outputView.printDealerDraw();
+        }
+    }
 
-    private void showGameResult(BlackJackGame blackJackGame, Dealer dealer, Players players) {
-        outputView.printFinalCardResult(dealer, players);
-        FinalIncome result = blackJackGame.judgeGameResult();
+    private void showResult(GameStartResult start) {
+        outputView.printFinalCardResult(start.getDealer(), start.getPlayers());
+        FinalIncome result = service.finishGame(start.getGameId());
         outputView.printFinalGameResult(result);
     }
-
 }
