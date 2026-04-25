@@ -86,7 +86,7 @@ public class BlackJackController {
             }
             TurnState after = service.playerHit(gameId);
             outputView.printCard(player);
-            if (after.isAllPlayersFinished() || !after.getCurrentPlayer().equals(player)) {
+            if (after.isTurnEndedFor(player)) {
                 return;
             }
         }

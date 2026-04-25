@@ -30,4 +30,11 @@ public class TurnState {
         }
         return currentPlayer;
     }
+
+    public boolean isTurnEndedFor(Player player) {
+        if (allPlayersFinished) {
+            return true;
+        }
+        return !currentPlayer.equals(player);
+    }
 }
