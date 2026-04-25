@@ -34,9 +34,6 @@ public class BlackJackGame {
 
     public void playerHit() {
         Player player = getCurrentPlayer();
-        if (!player.shouldDraw()) {
-            throw new IllegalStateException("더 이상 카드를 받을 수 없습니다.");
-        }
         player.recieveCard(deck.draw());
         if (player.isBust()) {
             moveToNextPlayer();

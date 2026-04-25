@@ -13,6 +13,10 @@ public class Player extends Participant {
 
     @Override
     public void recieveCard(Card card) {
+        if (isBust()) {
+            throw new IllegalStateException(getName() + "는 더 이상 카드를 받을 수 없습니다.");
+        }
+
         addCard(card);
     }
 
