@@ -1,6 +1,7 @@
 package blackjack;
 
 import blackjack.application.BlackJackService;
+import blackjack.application.PlayersAssembler;
 import blackjack.controller.BlackJackController;
 import blackjack.repository.BlackJackGameRepository;
 import blackjack.view.InputView;
@@ -12,8 +13,11 @@ public class Application {
         OutputView outputView = new OutputView();
         BlackJackGameRepository repository = new BlackJackGameRepository();
         BlackJackService service = new BlackJackService(repository);
+        PlayersAssembler playersAssembler = new PlayersAssembler();
 
-        BlackJackController controller = new BlackJackController(inputView, outputView, service);
+        BlackJackController controller = new BlackJackController(
+                inputView, outputView, service, playersAssembler
+        );
         controller.run();
     }
 }

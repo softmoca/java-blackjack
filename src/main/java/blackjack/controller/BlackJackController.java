@@ -3,23 +3,31 @@ package blackjack.controller;
 import blackjack.application.BlackJackService;
 import blackjack.application.DealerHitResult;
 import blackjack.application.GameStartResult;
+import blackjack.application.PlayerSignupForm;
+import blackjack.application.PlayersAssembler;
 import blackjack.application.TurnState;
 import blackjack.domain.game.FinalIncome;
 import blackjack.domain.participant.Player;
 import blackjack.domain.participant.Players;
 import blackjack.view.InputView;
 import blackjack.view.OutputView;
+import java.util.List;
 
 public class BlackJackController {
 
     private final InputView inputView;
     private final OutputView outputView;
     private final BlackJackService service;
+    private final PlayersAssembler playersAssembler;
 
-    public BlackJackController(InputView inputView, OutputView outputView, BlackJackService service) {
+    public BlackJackController(InputView inputView,
+                               OutputView outputView,
+                               BlackJackService service,
+                               PlayersAssembler playersAssembler) {
         this.inputView = inputView;
         this.outputView = outputView;
         this.service = service;
+        this.playersAssembler = playersAssembler;
     }
 
     public void run() {
@@ -30,10 +38,18 @@ public class BlackJackController {
     }
 
     private GameStartResult startGame() {
-        Players players = inputView.readPlayers();
+        Players players = readPlayers();
         GameStartResult start = service.startGame(players);
         outputView.printInitDraw(start.getPlayers(), start.getDealer());
         return start;
+    }
+
+    private Players readPlayers() {
+        List<String> names = inputView.readPlayerNames();
+        List<PlayerSignupForm> forms = names.stream()
+                .map(name -> new PlayerSignupForm(name, inputView.readBetAmount(name)))
+                .toList();
+        return playersAssembler.assemble(forms);
     }
 
     private void playAllPlayersTurn(Long gameId) {
